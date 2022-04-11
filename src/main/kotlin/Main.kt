@@ -25,14 +25,7 @@ import com.teamdev.jxbrowser.view.swing.BrowserView
 fun main() = application {
     val engine = Engine.newInstance(OFF_SCREEN)
     val browser = engine.newBrowser()
-
     val url = remember { mutableStateOf("https://www.google.com") }
-    val openAlertDialog = remember { mutableStateOf(false) }
-    val openConfirmDialog = remember { mutableStateOf(false) }
-    val title = remember { mutableStateOf("") }
-    val message = remember { mutableStateOf("") }
-    val actionOk = remember { mutableStateOf({}) }
-    val actionCancel = remember { mutableStateOf({}) }
 
     Window(
         onCloseRequest = ::exitApplication,
@@ -50,13 +43,21 @@ fun main() = application {
                 }
             )
         }
-        if (openAlertDialog.value) {
-            ComposeAlertDialog(title.value, message.value, actionOk.value, openAlertDialog)
-        }
-        if (openConfirmDialog.value) {
-            ComposeConfirmDialog(title.value, message.value, actionOk.value, actionCancel.value, openConfirmDialog)
-        }
+        showDialog(browser)
     }
+
+    browser.navigation().loadUrl("https://www.google.com")
+    browser.devTools().show()
+}
+
+@Composable
+private fun showDialog(browser: Browser) {
+    val openAlertDialog = remember { mutableStateOf(false) }
+    val openConfirmDialog = remember { mutableStateOf(false) }
+    val title = remember { mutableStateOf("") }
+    val message = remember { mutableStateOf("") }
+    val actionOk = remember { mutableStateOf({}) }
+    val actionCancel = remember { mutableStateOf({}) }
 
     browser.set(AlertCallback::class.java, AlertCallback { params, tell ->
         title.value = params.title()
@@ -73,8 +74,12 @@ fun main() = application {
         openConfirmDialog.value = true
     })
 
-    browser.navigation().loadUrl("https://www.google.com")
-    browser.devTools().show()
+    if (openAlertDialog.value) {
+        ComposeAlertDialog(title.value, message.value, actionOk.value, openAlertDialog)
+    }
+    if (openConfirmDialog.value) {
+        ComposeConfirmDialog(title.value, message.value, actionOk.value, actionCancel.value, openConfirmDialog)
+    }
 }
 
 @Composable
